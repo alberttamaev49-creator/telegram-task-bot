@@ -68,6 +68,10 @@ async def done(msg: Message, state: FSMContext):
 
 @router.message(TaskState.waiting_done)
 async def done_save(msg: Message, state: FSMContext):
+    if not msg.text.isdigit():
+        await msg.answer("Введите число (ID)")
+        return
+
     ok = await complete_task(int(msg.text))
     await state.clear()
     await msg.answer("Выполнено" if ok else "Не найдено")
@@ -81,6 +85,10 @@ async def delete(msg: Message, state: FSMContext):
 
 @router.message(TaskState.waiting_delete)
 async def delete_save(msg: Message, state: FSMContext):
+    if not msg.text.isdigit():
+        await msg.answer("Введите число (ID)")
+        return
+
     ok = await delete_task(int(msg.text))
     await state.clear()
     await msg.answer("Удалено" if ok else "Не найдено")
