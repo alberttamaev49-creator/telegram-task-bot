@@ -18,9 +18,7 @@ async def get_tasks():
 
 async def complete_task(task_id: int):
     async with async_session() as session:
-        result = await session.execute(
-            select(Task).where(Task.id == task_id)
-        )
+        result = await session.execute(select(Task).where(Task.id == task_id))
         task = result.scalar_one_or_none()
 
         if not task:
@@ -33,9 +31,7 @@ async def complete_task(task_id: int):
 
 async def delete_task(task_id: int):
     async with async_session() as session:
-        result = await session.execute(
-            select(Task).where(Task.id == task_id)
-        )
+        result = await session.execute(select(Task).where(Task.id == task_id))
         task = result.scalar_one_or_none()
 
         if not task:
