@@ -62,7 +62,7 @@ async def tasks(msg: Message):
 @router.message(Command("done"))
 async def done(msg: Message, state: FSMContext):
     await state.set_state(TaskState.waiting_done)
-    await msg.answer("Введите ID задачи")
+    await msg.answer("Введите ID")
 
 
 @router.message(StateFilter(TaskState.waiting_done))
@@ -81,7 +81,7 @@ async def done_save(msg: Message, state: FSMContext):
 @router.message(Command("delete"))
 async def delete(msg: Message, state: FSMContext):
     await state.set_state(TaskState.waiting_delete)
-    await msg.answer("Введите ID задачи")
+    await msg.answer("Введите ID")
 
 
 @router.message(StateFilter(TaskState.waiting_delete))

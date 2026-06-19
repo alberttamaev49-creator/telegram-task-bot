@@ -8,7 +8,6 @@ from app.handlers import router
 from app.config import BOT_TOKEN
 
 logging.basicConfig(level=logging.INFO)
-logging.getLogger("aiogram").setLevel(logging.INFO)
 
 
 def check_env():
@@ -29,8 +28,6 @@ check_env()
 
 async def main():
     bot = Bot(token=BOT_TOKEN)
-
-    # FIX HERE
     dp = Dispatcher(storage=MemoryStorage())
 
     dp.include_router(router)
