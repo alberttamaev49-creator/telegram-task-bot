@@ -8,7 +8,7 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:
     raise RuntimeError("DATABASE_URL не задан")
 
-print("DATABASE_URL loaded:", DATABASE_URL)
+print("DB:", DATABASE_URL)
 
 ssl_context = ssl.create_default_context()
 
