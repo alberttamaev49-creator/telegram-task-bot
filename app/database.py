@@ -2,18 +2,14 @@ import os
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlalchemy.orm import declarative_base
 
-DATABASE_URL = os.getenv("DATABASE_URL")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(BASE_DIR, "tasks.db")
 
-# если нет PostgreSQL — fallback на SQLite (для локалки)
-if not DATABASE_URL:
-    DATABASE_URL = "sqlite+aiosqlite:///./tasks.db"
+DATABASE_URL = f"sqlite+aiosqlite:///{DB_PATH}"
 
 engine = create_async_engine(DATABASE_URL, echo=False)
 
-async_session = async_sessionmaker(
-    engine,
-    expire_on_commit=False
-)
+async_session = async_sessionmaker(engine, expire_on_commit=False)
 
 Base = declarative_base()
 
