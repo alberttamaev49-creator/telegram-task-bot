@@ -2,3 +2,4 @@ aiogram==3.*
 SQLAlchemy==2.*
 asyncpg
 python-dotenv
+psycopg2-binary

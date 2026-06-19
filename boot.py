@@ -18,7 +18,7 @@ def check_env():
         raise RuntimeError(f"Не заданы переменные: {', '.join(missing)}")
 
 
-check_env()  # ← ВАЖНО: ДО ВСЕХ ИМПОРТОВ БД
+check_env()
 
 from aiogram import Bot, Dispatcher
 from app.handlers import router
@@ -26,8 +26,6 @@ from app.config import BOT_TOKEN
 
 
 async def main():
-    
-
     bot = Bot(token=BOT_TOKEN)
     dp = Dispatcher()
 

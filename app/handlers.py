@@ -23,7 +23,6 @@ class TaskState(StatesGroup):
 @router.message(Command("start"))
 async def start(msg: Message):
     await msg.answer(
-        "Task Bot\n\n"
         "/add - добавить задачу\n"
         "/tasks - список задач\n"
         "/done - выполнить задачу\n"
@@ -63,32 +62,24 @@ async def tasks(msg: Message):
 @router.message(Command("done"))
 async def done(msg: Message, state: FSMContext):
     await state.set_state(TaskState.waiting_done)
-    await msg.answer("Введите ID задачи")
+    await msg.answer("Введите ID")
 
 
 @router.message(TaskState.waiting_done)
 async def done_save(msg: Message, state: FSMContext):
-    if not msg.text.isdigit():
-        await msg.answer("Введите число (ID)")
-        return
-
     ok = await complete_task(int(msg.text))
     await state.clear()
-    await msg.answer("Выполнено" if ok else "Не найдено")
+    await msg.answer("Готово" if ok else "Не найдено")
 
 
 @router.message(Command("delete"))
 async def delete(msg: Message, state: FSMContext):
     await state.set_state(TaskState.waiting_delete)
-    await msg.answer("Введите ID задачи")
+    await msg.answer("Введите ID")
 
 
 @router.message(TaskState.waiting_delete)
 async def delete_save(msg: Message, state: FSMContext):
-    if not msg.text.isdigit():
-        await msg.answer("Введите число (ID)")
-        return
-
     ok = await delete_task(int(msg.text))
     await state.clear()
     await msg.answer("Удалено" if ok else "Не найдено")

@@ -5,15 +5,18 @@ from sqlalchemy.orm import declarative_base
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 if not DATABASE_URL:
-    raise RuntimeError("DATABASE_URL не задан в переменных окружения")
+    raise RuntimeError("DATABASE_URL не задан")
 
-# важно: лог для проверки (очень помогает на Railway)
 print("DATABASE_URL loaded:", DATABASE_URL)
+
+# FIX: убираем sslmode (ломает SQLAlchemy async)
+if "sslmode" in DATABASE_URL:
+    DATABASE_URL = DATABASE_URL.split("?")[0]
 
 engine = create_async_engine(
     DATABASE_URL,
     echo=False,
-    future=True
+    pool_pre_ping=True
 )
 
 async_session = async_sessionmaker(
