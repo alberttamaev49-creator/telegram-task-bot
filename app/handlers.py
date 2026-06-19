@@ -1,10 +1,15 @@
 from aiogram import Router
 from aiogram.types import Message
-from aiogram.filters import Command
+from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 
-from app.service import create_task, get_tasks, complete_task, delete_task
+from app.service import (
+    create_task,
+    get_tasks,
+    complete_task,
+    delete_task
+)
 
 router = Router()
 
@@ -46,26 +51,26 @@ async def tasks(msg: Message):
         await msg.answer("Задач нет")
         return
 
-    await msg.answer(
-        "\n".join(
-            f"{t.id}. {'[X]' if t.completed else '[ ]'} {t.text}"
-            for t in data
-        )
+    text = "\n".join(
+        f"{t.id}. {'[X]' if t.completed else '[ ]'} {t.text}"
+        for t in data
     )
+
+    await msg.answer(text)
 
 
 @router.message(Command("done"))
 async def done(msg: Message, state: FSMContext):
     await state.set_state(TaskState.waiting_done)
-    await msg.answer("Введите ID")
+    await msg.answer("Введите ID задачи")
 
 
-@router.message(TaskState.waiting_done)
+@router.message(StateFilter(TaskState.waiting_done))
 async def done_save(msg: Message, state: FSMContext):
     try:
         task_id = int(msg.text)
     except ValueError:
-        await msg.answer("Введите число (ID)")
+        await msg.answer("Введите число")
         return
 
     ok = await complete_task(task_id)
@@ -76,15 +81,15 @@ async def done_save(msg: Message, state: FSMContext):
 @router.message(Command("delete"))
 async def delete(msg: Message, state: FSMContext):
     await state.set_state(TaskState.waiting_delete)
-    await msg.answer("Введите ID")
+    await msg.answer("Введите ID задачи")
 
 
-@router.message(TaskState.waiting_delete)
+@router.message(StateFilter(TaskState.waiting_delete))
 async def delete_save(msg: Message, state: FSMContext):
     try:
         task_id = int(msg.text)
     except ValueError:
-        await msg.answer("Введите число (ID)")
+        await msg.answer("Введите число")
         return
 
     ok = await delete_task(task_id)
