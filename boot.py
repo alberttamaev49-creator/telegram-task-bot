@@ -2,7 +2,13 @@ import asyncio
 import logging
 import os
 
+from aiogram import Bot, Dispatcher
+from aiogram.fsm.storage.memory import MemoryStorage
+from app.handlers import router
+from app.config import BOT_TOKEN
+
 logging.basicConfig(level=logging.INFO)
+logging.getLogger("aiogram").setLevel(logging.INFO)
 
 
 def check_env():
@@ -20,14 +26,12 @@ def check_env():
 
 check_env()
 
-from aiogram import Bot, Dispatcher
-from app.handlers import router
-from app.config import BOT_TOKEN
-
 
 async def main():
     bot = Bot(token=BOT_TOKEN)
-    dp = Dispatcher()
+
+    # FIX HERE
+    dp = Dispatcher(storage=MemoryStorage())
 
     dp.include_router(router)
 

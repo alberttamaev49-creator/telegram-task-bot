@@ -4,12 +4,7 @@ from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 
-from app.service import (
-    create_task,
-    get_tasks,
-    complete_task,
-    delete_task
-)
+from app.service import create_task, get_tasks, complete_task, delete_task
 
 router = Router()
 
@@ -51,12 +46,12 @@ async def tasks(msg: Message):
         await msg.answer("Задач нет")
         return
 
-    text = "\n".join(
-        f"{t.id}. {'[X]' if t.completed else '[ ]'} {t.text}"
-        for t in data
+    await msg.answer(
+        "\n".join(
+            f"{t.id}. {'[X]' if t.completed else '[ ]'} {t.text}"
+            for t in data
+        )
     )
-
-    await msg.answer(text)
 
 
 @router.message(Command("done"))
@@ -67,7 +62,13 @@ async def done(msg: Message, state: FSMContext):
 
 @router.message(TaskState.waiting_done)
 async def done_save(msg: Message, state: FSMContext):
-    ok = await complete_task(int(msg.text))
+    try:
+        task_id = int(msg.text)
+    except ValueError:
+        await msg.answer("Введите число (ID)")
+        return
+
+    ok = await complete_task(task_id)
     await state.clear()
     await msg.answer("Готово" if ok else "Не найдено")
 
@@ -80,6 +81,12 @@ async def delete(msg: Message, state: FSMContext):
 
 @router.message(TaskState.waiting_delete)
 async def delete_save(msg: Message, state: FSMContext):
-    ok = await delete_task(int(msg.text))
+    try:
+        task_id = int(msg.text)
+    except ValueError:
+        await msg.answer("Введите число (ID)")
+        return
+
+    ok = await delete_task(task_id)
     await state.clear()
     await msg.answer("Удалено" if ok else "Не найдено")
