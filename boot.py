@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import os
 
 from aiogram import Bot, Dispatcher
 from app.config import BOT_TOKEN
@@ -11,7 +12,10 @@ logging.basicConfig(level=logging.INFO)
 
 async def main():
     if not BOT_TOKEN:
-        raise ValueError("BOT_TOKEN is empty!")
+        raise RuntimeError("BOT_TOKEN не задан")
+
+    if not os.getenv("DATABASE_URL"):
+        raise RuntimeError("DATABASE_URL не задан")
 
     await init_db()
 
