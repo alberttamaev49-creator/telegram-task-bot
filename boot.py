@@ -10,12 +10,21 @@ from app.database import init_db
 logging.basicConfig(level=logging.INFO)
 
 
-async def main():
+def check_env():
+    missing = []
+
     if not BOT_TOKEN:
-        raise RuntimeError("BOT_TOKEN не задан")
+        missing.append("BOT_TOKEN")
 
     if not os.getenv("DATABASE_URL"):
-        raise RuntimeError("DATABASE_URL не задан")
+        missing.append("DATABASE_URL")
+
+    if missing:
+        raise RuntimeError(f"Не заданы переменные: {', '.join(missing)}")
+
+
+async def main():
+    check_env()
 
     await init_db()
 
