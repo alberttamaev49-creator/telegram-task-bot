@@ -1,6 +1,6 @@
+from sqlalchemy import select
 from app.database import async_session
 from app.models import Task
-from sqlalchemy import select
 
 
 async def create_task(text: str):
