@@ -14,7 +14,7 @@ engine = create_async_engine(
     echo=False,
     pool_pre_ping=True,
     connect_args={
-        "ssl": True  # 👈 ВОТ ЭТО правильно для asyncpg
+        "ssl": True 
     }
 )
 
