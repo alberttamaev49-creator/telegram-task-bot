@@ -7,8 +7,18 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:
     raise RuntimeError("DATABASE_URL не задан в переменных окружения")
 
-engine = create_async_engine(DATABASE_URL)
+# важно: лог для проверки (очень помогает на Railway)
+print("DATABASE_URL loaded:", DATABASE_URL)
 
-async_session = async_sessionmaker(engine, expire_on_commit=False)
+engine = create_async_engine(
+    DATABASE_URL,
+    echo=False,
+    future=True
+)
+
+async_session = async_sessionmaker(
+    bind=engine,
+    expire_on_commit=False
+)
 
 Base = declarative_base()
