@@ -1,5 +1,4 @@
 aiogram==3.*
 SQLAlchemy==2.*
 asyncpg
-aiosqlite
 python-dotenv
