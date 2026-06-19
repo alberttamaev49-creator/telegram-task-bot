@@ -1,54 +1,53 @@
-from aiogram import Router
-from aiogram.types import Message
-from aiogram.filters import Command, StateFilter
+from aiogram import Router, F
+from aiogram.types import Message, CallbackQuery
+from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-from app.service import (
-    create_task,
-    get_tasks,
-    complete_task,
-    delete_task
-)
+from app.service import create_task, get_tasks, complete_task, delete_task
 
 router = Router()
 
 
+# ================= STATES =================
 class TaskState(StatesGroup):
     waiting_text = State()
     waiting_done = State()
     waiting_delete = State()
 
 
-@router.message(Command("start"))
+# ================= MAIN MENU =================
+def main_menu():
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="➕ Добавить", callback_data="add")],
+        [InlineKeyboardButton(text="📋 Список", callback_data="list")],
+        [InlineKeyboardButton(text="✔ Выполнить", callback_data="done")],
+        [InlineKeyboardButton(text="🗑 Удалить", callback_data="delete")]
+    ])
+
+
+# ================= START =================
+@router.message(CommandStart())
 async def start(msg: Message):
-    await msg.answer(
-        "/add - добавить задачу\n"
-        "/tasks - список задач\n"
-        "/done - выполнить задачу\n"
-        "/delete - удалить задачу"
-    )
+    await msg.answer("Выбери действие:", reply_markup=main_menu())
 
 
-@router.message(Command("add"))
-async def add(msg: Message, state: FSMContext):
+# ================= MENU HANDLERS =================
+@router.callback_query(F.data == "add")
+async def add_menu(call: CallbackQuery, state: FSMContext):
     await state.set_state(TaskState.waiting_text)
-    await msg.answer("Введите задачу")
+    await call.message.answer("Введите задачу")
+    await call.answer()
 
 
-@router.message(TaskState.waiting_text)
-async def save(msg: Message, state: FSMContext):
-    await create_task(msg.text)
-    await state.clear()
-    await msg.answer("Задача добавлена")
-
-
-@router.message(Command("tasks"))
-async def tasks(msg: Message):
+@router.callback_query(F.data == "list")
+async def list_tasks(call: CallbackQuery):
     data = await get_tasks()
 
     if not data:
-        await msg.answer("Задач нет")
+        await call.message.answer("Задач нет")
+        await call.answer()
         return
 
     text = "\n".join(
@@ -56,17 +55,34 @@ async def tasks(msg: Message):
         for t in data
     )
 
-    await msg.answer(text)
+    await call.message.answer(text)
+    await call.answer()
 
 
-@router.message(Command("done"))
-async def done(msg: Message, state: FSMContext):
+@router.callback_query(F.data == "done")
+async def done_menu(call: CallbackQuery, state: FSMContext):
     await state.set_state(TaskState.waiting_done)
-    await msg.answer("Введите ID")
+    await call.message.answer("Введите ID задачи для выполнения")
+    await call.answer()
 
 
-@router.message(StateFilter(TaskState.waiting_done))
-async def done_save(msg: Message, state: FSMContext):
+@router.callback_query(F.data == "delete")
+async def delete_menu(call: CallbackQuery, state: FSMContext):
+    await state.set_state(TaskState.waiting_delete)
+    await call.message.answer("Введите ID задачи для удаления")
+    await call.answer()
+
+
+# ================= FSM INPUT =================
+@router.message(TaskState.waiting_text)
+async def save_task(msg: Message, state: FSMContext):
+    await create_task(msg.text)
+    await state.clear()
+    await msg.answer("Задача добавлена", reply_markup=main_menu())
+
+
+@router.message(TaskState.waiting_done)
+async def do_done(msg: Message, state: FSMContext):
     try:
         task_id = int(msg.text)
     except ValueError:
@@ -75,17 +91,11 @@ async def done_save(msg: Message, state: FSMContext):
 
     ok = await complete_task(task_id)
     await state.clear()
-    await msg.answer("Готово" if ok else "Не найдено")
+    await msg.answer("Готово" if ok else "Не найдено", reply_markup=main_menu())
 
 
-@router.message(Command("delete"))
-async def delete(msg: Message, state: FSMContext):
-    await state.set_state(TaskState.waiting_delete)
-    await msg.answer("Введите ID")
-
-
-@router.message(StateFilter(TaskState.waiting_delete))
-async def delete_save(msg: Message, state: FSMContext):
+@router.message(TaskState.waiting_delete)
+async def do_delete(msg: Message, state: FSMContext):
     try:
         task_id = int(msg.text)
     except ValueError:
@@ -94,4 +104,4 @@ async def delete_save(msg: Message, state: FSMContext):
 
     ok = await delete_task(task_id)
     await state.clear()
-    await msg.answer("Удалено" if ok else "Не найдено")
+    await msg.answer("Удалено" if ok else "Не найдено", reply_markup=main_menu())
